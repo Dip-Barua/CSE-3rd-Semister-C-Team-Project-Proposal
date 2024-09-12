@@ -2,14 +2,12 @@
 using namespace std;
 
 char space[3][3] = {{'1', '2', '3'}, {'4', '5', '6'}, {'7', '8', '9'}};
-int row;
-int column;
+int row, column;
 char token = 'x';
 bool tie = false;
-string n1 = "";
-string n2 = "";
+string n1, n2;
 
-void functionOne() {
+void printBoard() {
     cout << "    |     |   \n";
     cout << "  " << space[0][0] << " |  " << space[0][1] << "  |  " << space[0][2] << " \n";
     cout << "____|_____|____\n";
@@ -21,57 +19,49 @@ void functionOne() {
     cout << "    |     |   \n";
 }
 
-void functionTwo() {
+bool isValidMove(int digit) {
+    return digit >= 1 && digit <= 9 && space[(digit - 1) / 3][(digit - 1) % 3] != 'x' && space[(digit - 1) / 3][(digit - 1) % 3] != '0';
+}
+
+void playerMove() {
     int digit;
     if (token == 'x') {
         cout << n1 << " please enter a number: ";
-        cin >> digit;
     } else {
         cout << n2 << " please enter a number: ";
-        cin >> digit;
     }
+    cin >> digit;
 
-    // Determine the row and column based on the digit
-    if (digit == 1) { row = 0; column = 0; }
-    else if (digit == 2) { row = 0; column = 1; }
-    else if (digit == 3) { row = 0; column = 2; }
-    else if (digit == 4) { row = 1; column = 0; }
-    else if (digit == 5) { row = 1; column = 1; }
-    else if (digit == 6) { row = 1; column = 2; }
-    else if (digit == 7) { row = 2; column = 0; }
-    else if (digit == 8) { row = 2; column = 1; }
-    else if (digit == 9) { row = 2; column = 2; }
-    else {
-        cout << "Invalid input! Please enter a number between 1 and 9." << endl;
-        functionTwo();
+    if (!isValidMove(digit)) {
+        cout << "Invalid move! Please choose another cell." << endl;
+        playerMove();
         return;
     }
 
-    // Place token in the correct position if it's valid
-    if (token == 'x' && space[row][column] != 'x' && space[row][column] != '0') {
-        space[row][column] = 'x';
-        token = '0';
-    } else if (token == '0' && space[row][column] != 'x' && space[row][column] != '0') {
-        space[row][column] = '0';
-        token = 'x';
-    } else {
-        cout << "The cell is already filled! Choose another cell." << endl;
-        functionTwo();
-    }
-    functionOne();
+    row = (digit - 1) / 3;
+    column = (digit - 1) % 3;
+    space[row][column] = token;
+    token = (token == 'x') ? '0' : 'x';
+    printBoard();
 }
 
-bool functionThree() {
+bool checkWin() {
+    // Check rows and columns for a win
     for (int i = 0; i < 3; i++) {
         if ((space[i][0] == space[i][1] && space[i][1] == space[i][2]) || 
             (space[0][i] == space[1][i] && space[1][i] == space[2][i])) {
             return true;
         }
     }
+    // Check diagonals for a win
     if ((space[0][0] == space[1][1] && space[1][1] == space[2][2]) || 
         (space[0][2] == space[1][1] && space[1][1] == space[2][0])) {
         return true;
     }
+    return false;
+}
+
+bool isBoardFull() {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             if (space[i][j] != 'x' && space[i][j] != '0') {
@@ -79,8 +69,7 @@ bool functionThree() {
             }
         }
     }
-    tie = true;
-    return false;
+    return true;
 }
 
 int main() {
@@ -92,16 +81,19 @@ int main() {
     cout << n1 << " is player1, so he/she will play first.\n";
     cout << n2 << " is player2, so he/she will play second.\n";
 
-    while (!functionThree()) {
-        functionOne();
-        functionTwo();
+    printBoard();
+
+    while (!checkWin() && !isBoardFull()) {
+        playerMove();
     }
 
-    if (token == 'x' && !tie) {
-        cout << n2 << " Wins!!" << endl;
-    } else if (token == '0' && !tie) {
-        cout << n1 << " Wins!!" << endl;
-    } else {
+    if (checkWin()) {
+        if (token == 'x') {
+            cout << n2 << " Wins!!" << endl;
+        } else {
+            cout << n1 << " Wins!!" << endl;
+        }
+    } else if (isBoardFull()) {
         cout << "It's a draw!" << endl;
     }
 
